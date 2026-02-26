@@ -8,6 +8,7 @@ subtitle: How persistent client-side caching turned 800ms animation loads into n
 authorName: Swayam
 authorMeta: Apr 2025 - Frontend Engineer
 tags: IndexedDB, Performance, Lottie, Caching, Frontend
+externalUrl: https://swayamgupta20.medium.com/unlock-lightning-fast-lottie-loads-with-indexeddb-persistence-a124562e324b
 ---
 
 <p class="lead">Lottie animations are great until they aren't. A single complex animation JSON can be 300KB+, and when you have six of them loading on app start, your startup waterfall turns into a waterfall of pain.</p>

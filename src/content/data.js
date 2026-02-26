@@ -51,32 +51,37 @@ export const sections = [
       },
     ],
   },
+]
+
+export const about = {
+  tagline: 'Engineer / IIT Kanpur 2024',
+  bio: 'I build useful systems quickly, then harden them for production. My work sits at the intersection of product thinking, applied AI, and systems engineering. I enjoy teams where ownership is high and iteration cycles are fast.',
+  currentRole: 'SWE II @ ixigo',
+  currentFocus:
+    'Shipping production voice AI systems with a focus on latency, reliability, and user experience.',
+}
+
+export const experience = [
   {
-    id: 'about',
-    title: 'About',
-    intro: 'A quick introduction.',
-    items: [
-      {
-        slug: 'who-i-am',
-        title: 'Who I Am',
-        meta: 'Engineer / IIT Kanpur 2024',
-        summary:
-          'I am an engineer who likes building useful systems quickly, then hardening them for production.',
-        content: [
-          'My work usually sits at the intersection of product thinking, applied AI, and systems engineering.',
-        ],
-      },
-      {
-        slug: 'current-focus',
-        title: 'Current Focus',
-        meta: 'Senior AI Engineer @ ixigo',
-        summary:
-          'Shipping production voice AI systems with a focus on latency, reliability, and user experience.',
-        content: [
-          'I enjoy teams where ownership is high and iteration cycles are fast.',
-        ],
-      },
-    ],
+    role: 'SWE II — Voice AI',
+    company: 'ixigo',
+    period: 'Jul 2024 — Present',
+    description:
+      'Built and scaled the production voice AI platform — STT/LLM/TTS orchestration, tool calling, real-time interruption handling. 30K+ daily calls at sub-500ms latency.',
+  },
+  {
+    role: 'SDE Intern — Platform',
+    company: 'ixigo',
+    period: 'Jan 2024 — Jun 2024',
+    description:
+      'Built the multi-target JavaScript SDK for web, React Native, and Node. Worked on animation performance, IndexedDB caching, and frontend infrastructure.',
+  },
+  {
+    role: 'B.Tech — Electrical Engineering',
+    company: 'IIT Kanpur',
+    period: '2020 — 2024',
+    description:
+      'Focused on signal processing, ML coursework, and building side projects across web, mobile, and automation.',
   },
 ]
 

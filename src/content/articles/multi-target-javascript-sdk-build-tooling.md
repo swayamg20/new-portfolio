@@ -8,6 +8,7 @@ subtitle: One codebase, multiple outputs — structuring an SDK that ships to we
 authorName: Swayam
 authorMeta: Aug 2025 - SDK Engineer
 tags: JavaScript, Build Tooling, SDK, Rollup, Architecture
+externalUrl: https://swayamgupta20.medium.com/building-a-multi-target-javascript-sdk-build-tooling-839ace1f491d
 ---
 
 <p class="lead">Shipping separate repositories per platform sounds clean until release velocity drops and regressions multiply. The better model is one codebase with explicit target adapters and strict packaging boundaries.</p>

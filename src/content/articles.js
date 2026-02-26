@@ -94,6 +94,7 @@ export const articles = Object.entries(articleFiles)
       authorName: data.authorName ?? '',
       authorMeta: data.authorMeta ?? '',
       tags: data.tags ?? '',
+      externalUrl: data.externalUrl ?? '',
       body: content.trim(),
       sortTimestamp: toTimestamp(data.date),
     }
