@@ -6,17 +6,28 @@ import {
   Routes,
   useParams,
 } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import rehypeRaw from 'rehype-raw'
+import rehypeHighlight from 'rehype-highlight'
 import './App.css'
 import {
-  articles,
   contactInfo,
-  findArticleBySlug,
   findSectionItemBySlug,
   getSectionById,
   hero,
   sections,
   siteMeta,
 } from './content/data'
+import { articles, findArticleBySlug } from './content/articles'
+
+function TopBackLink({ to, label }) {
+  return (
+    <Link className="mono page-back-link" to={to}>
+      ← {label}
+    </Link>
+  )
+}
 
 function Layout({ children }) {
   return (
@@ -27,8 +38,7 @@ function Layout({ children }) {
         </Link>
         <nav className="mono nav-links" aria-label="Primary">
           <a href="/#projects">WORK</a>
-          <a href="/#portfolio">PORTFOLIO</a>
-          <a href="/#interests">INTERESTS</a>
+          <a href="/#about">ABOUT</a>
           <Link to="/articles">ARTICLES</Link>
           <a href="/#contact">CONTACT</a>
         </nav>
@@ -117,10 +127,15 @@ function HomePage() {
   return (
     <>
       <section className="hero" aria-label="Landing hero">
-        <p className="mono section-label">{hero.label.toUpperCase()}</p>
-        <h1>{hero.headline}</h1>
-        <div className="rule" />
-        <p className="description">{hero.description}</p>
+        <div className="hero-content">
+          <p className="mono section-label">{hero.label.toUpperCase()}</p>
+          <h1 className="hero-heading">
+            <span className="hero-heading-intro">Hi, I am </span>
+            <span className="hero-heading-name">Swayam Gupta</span>
+          </h1>
+          <div className="rule" />
+          <p className="description">{hero.description}</p>
+        </div>
       </section>
 
       <section className="content-wrap">
@@ -177,6 +192,7 @@ function HomePage() {
 function ArticlesPage() {
   return (
     <section className="content-wrap standalone-page">
+      <TopBackLink to="/" label="BACK TO HOME" />
       <div className="section-header">
         <p className="mono section-title">ALL ARTICLES</p>
       </div>
@@ -208,6 +224,7 @@ function SectionEntryPage() {
   return (
     <section className="detail-page">
       <div className="detail-wrap">
+        <TopBackLink to="/" label="BACK TO HOME" />
         <p className="mono detail-kicker">
           {section.title.toUpperCase()} / {entry.meta}
         </p>
@@ -234,19 +251,58 @@ function ArticleEntryPage() {
     return <Navigate to="/404" replace />
   }
 
+  const articleTags =
+    typeof article.tags === 'string'
+      ? article.tags
+          .split(',')
+          .map((tag) => tag.trim())
+          .filter(Boolean)
+      : []
+
   return (
     <section className="detail-page">
-      <div className="detail-wrap">
+      <div className="detail-wrap article-detail-wrap">
+        <TopBackLink to="/articles" label="BACK TO ARTICLES" />
         <p className="mono detail-kicker">
           ARTICLE / {article.date} / {article.readTime}
         </p>
-        <h2>{article.title}</h2>
-        <p className="detail-summary">{article.summary}</p>
-        <div className="detail-body">
-          {article.body.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+        <div className="article-page-hero">
+          {article.heroLabel ? <p className="mono article-hero-label">{article.heroLabel}</p> : null}
+          <h2 className="article-hero-title">{article.title}</h2>
+          {article.subtitle ? <p className="article-hero-subtitle">{article.subtitle}</p> : null}
+          {article.summary ? <p className="detail-summary">{article.summary}</p> : null}
+          {article.authorName || article.authorMeta ? (
+            <div className="article-author-block">
+              <div className="article-author-avatar">{(article.authorName || 'A').charAt(0)}</div>
+              <div className="article-author-info">
+                {article.authorName ? <p className="mono article-author-name">{article.authorName}</p> : null}
+                {article.authorMeta ? <p className="mono article-author-meta">{article.authorMeta}</p> : null}
+              </div>
+            </div>
+          ) : null}
         </div>
+        {article.coverImage ? (
+          <img
+            className="article-cover"
+            src={article.coverImage}
+            alt={`${article.title} cover`}
+            loading="lazy"
+          />
+        ) : null}
+        <div className="detail-body article-prose">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeHighlight]}>
+            {article.body}
+          </ReactMarkdown>
+        </div>
+        {articleTags.length ? (
+          <div className="article-tags" aria-label="Article tags">
+            {articleTags.map((tag) => (
+              <span className="mono article-tag" key={tag}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : null}
         <Link className="mono item-link" to="/articles">
           BACK TO ARTICLES
         </Link>
@@ -259,6 +315,7 @@ function NotFoundPage() {
   return (
     <section className="detail-page">
       <div className="detail-wrap">
+        <TopBackLink to="/" label="BACK TO HOME" />
         <p className="mono detail-kicker">404</p>
         <h2>Page not found.</h2>
         <Link className="mono item-link" to="/">
