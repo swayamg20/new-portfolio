@@ -87,7 +87,7 @@ export const articles = Object.entries(articleFiles)
       title: data.title ?? slug,
       date: data.date ?? '',
       readTime: data.readTime ?? '',
-      summary: data.summary ?? '',
+      summary: data.summary ?? data.subtitle ?? '',
       coverImage: data.coverImage ?? '',
       heroLabel: data.heroLabel ?? '',
       subtitle: data.subtitle ?? '',

@@ -4,7 +4,7 @@ export const siteMeta = {
 }
 
 export const hero = {
-  label: 'Portfolio',
+  label: '...',
   headline: 'Engineer.',
   description:
     'Currently working on production voice AI at ixigo. I also build applied LLM products, automation tooling, and performance-focused web systems.',
@@ -63,25 +63,20 @@ export const about = {
 
 export const experience = [
   {
-    role: 'SWE II — Voice AI',
+    role: 'Software Engineering 2 — AI Products',
     company: 'ixigo',
-    period: 'Jul 2024 — Present',
+    companyUrl: 'https://www.ixigo.com',
+    period: "Aug'24 — Present",
     description:
-      'Built and scaled the production voice AI platform — STT/LLM/TTS orchestration, tool calling, real-time interruption handling. 30K+ daily calls at sub-500ms latency.',
+      'Building production-ready Voice AI systems (STT–LLM–TTS) with multi-agent orchestration and seamless voice UX.',
   },
   {
-    role: 'SDE Intern — Platform',
-    company: 'ixigo',
-    period: 'Jan 2024 — Jun 2024',
+    role: 'Founding Engineer',
+    company: 'overlayy AI',
+    companyUrl: 'https://overlayy.com',
+    period: "Apr'24 — Aug'24",
     description:
-      'Built the multi-target JavaScript SDK for web, React Native, and Node. Worked on animation performance, IndexedDB caching, and frontend infrastructure.',
-  },
-  {
-    role: 'B.Tech — Electrical Engineering',
-    company: 'IIT Kanpur',
-    period: '2020 — 2024',
-    description:
-      'Focused on signal processing, ML coursework, and building side projects across web, mobile, and automation.',
+      'Architected and built the complete tech stack from scratch (LLM pipelines, AWS DevOps, microservices, CI/CD etc).',
   },
 ]
 

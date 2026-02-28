@@ -6,6 +6,8 @@ import {
   Route,
   Routes,
   useParams,
+  useLocation,
+  useNavigate,
 } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -24,6 +26,62 @@ import {
 } from './content/data'
 import { articles, findArticleBySlug } from './content/articles'
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
+
+function DocumentTitle() {
+  const { pathname } = useLocation()
+  const articleSlug = pathname.startsWith('/articles/') && pathname !== '/articles'
+    ? pathname.replace(/^\/articles\/?/, '')
+    : null
+  const article = articleSlug ? findArticleBySlug(articleSlug) : null
+
+  useEffect(() => {
+    if (article) {
+      document.title = `${article.title} | ${siteMeta.name}`
+    } else if (pathname === '/articles') {
+      document.title = `Articles | ${siteMeta.name}`
+    } else if (pathname === '/') {
+      document.title = siteMeta.name
+    } else if (pathname === '/404') {
+      document.title = `Not found | ${siteMeta.name}`
+    } else {
+      document.title = siteMeta.name
+    }
+  }, [pathname, article])
+  return null
+}
+
+function BackButton({ fallback, label }) {
+  const navigate = useNavigate()
+  const hasHistory = useRef(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.key !== 'default') hasHistory.current = true
+  }, [location.key])
+
+  function handleClick(e) {
+    e.preventDefault()
+    if (hasHistory.current) {
+      navigate(-1)
+    } else {
+      navigate(fallback)
+    }
+  }
+
+  return (
+    <a className="mono page-back-link" href={fallback} onClick={handleClick}>
+      ← {label}
+    </a>
+  )
+}
+
 function TopBackLink({ to, label }) {
   return (
     <Link className="mono page-back-link" to={to}>
@@ -40,8 +98,8 @@ function NavBar() {
           {siteMeta.name.toUpperCase()} / {siteMeta.role.toUpperCase()}
         </Link>
         <nav className="mono nav-links" aria-label="Primary">
-          <a href="/#projects">WORK</a>
           <a href="/#about">ABOUT</a>
+          <a href="/#projects">WORK</a>
           <Link to="/articles">ARTICLES</Link>
           <a href="/#contact">CONTACT</a>
           <span className="nav-divider" />
@@ -75,7 +133,27 @@ function ReadingProgress() {
   return <div className="reading-progress" style={{ width: `${pct}%` }} />
 }
 
+function useScrollReveal() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
+    )
+    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [pathname])
+}
+
 function Layout({ children }) {
+  useScrollReveal()
   return (
     <main className="studio">
       <NavBar />
@@ -204,8 +282,44 @@ function HomePage() {
       </section>
 
       <section className="content-wrap">
+        <article className="section-block reveal" id="about">
+          <div className="section-header">
+            <p className="mono section-title">ABOUT</p>
+          </div>
+          <p className="mono about-tagline">{about.tagline}</p>
+          <p className="about-bio">{about.bio}</p>
+          <div className="about-current">
+            <p className="mono about-current-role">{about.currentRole}</p>
+            <p className="about-current-focus">{about.currentFocus}</p>
+          </div>
+        </article>
+
+        <article className="section-block reveal" id="experience">
+          <div className="section-header">
+            <p className="mono section-title">EXPERIENCE</p>
+          </div>
+          <div className="experience-timeline">
+            {experience.map((exp) => (
+              <div className="experience-item reveal" key={exp.period}>
+                <div className="experience-period">
+                  <p className="mono">{exp.period}</p>
+                </div>
+                <div className="experience-content">
+                  <p className="experience-role">{exp.role}</p>
+                  <p className="mono experience-company">
+                    {exp.companyUrl ? (
+                      <a href={exp.companyUrl} target="_blank" rel="noreferrer">{exp.company}</a>
+                    ) : exp.company}
+                  </p>
+                  <p className="experience-desc">{exp.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
         {sections.map((section) => (
-          <article className={`section-block section-${section.id}`} id={section.id} key={section.id}>
+          <article className={`section-block section-${section.id} reveal`} id={section.id} key={section.id}>
             <div className="section-header">
               <p className="mono section-title">{section.title.toUpperCase()}</p>
               <p className="mono section-intro">{section.intro}</p>
@@ -214,38 +328,7 @@ function HomePage() {
           </article>
         ))}
 
-        <article className="section-block" id="about">
-          <div className="section-header">
-            <p className="mono section-title">ABOUT</p>
-          </div>
-          <div className="about-block">
-            <div className="about-intro">
-              <p className="mono item-meta">{about.tagline}</p>
-              <p className="about-bio">{about.bio}</p>
-              <div className="about-current">
-                <p className="mono about-current-role">{about.currentRole}</p>
-                <p className="about-current-focus">{about.currentFocus}</p>
-              </div>
-            </div>
-            <div className="experience-timeline">
-              <p className="mono experience-label">EXPERIENCE</p>
-              {experience.map((exp) => (
-                <div className="experience-item" key={exp.period}>
-                  <div className="experience-period">
-                    <p className="mono">{exp.period}</p>
-                  </div>
-                  <div className="experience-content">
-                    <p className="experience-role">{exp.role}</p>
-                    <p className="mono experience-company">{exp.company}</p>
-                    <p className="experience-desc">{exp.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </article>
-
-        <article className="section-block" id="articles">
+        <article className="section-block reveal" id="articles">
           <div className="section-header">
             <p className="mono section-title">ARTICLES</p>
             <Link className="mono item-link section-cta" to="/articles">
@@ -260,7 +343,7 @@ function HomePage() {
           </div>
         </article>
 
-        <article className="section-block contact-block" id="contact">
+        <article className="section-block contact-block reveal" id="contact">
           <div className="section-header">
             <p className="mono section-title">CONTACT</p>
           </div>
@@ -402,7 +485,7 @@ function ArticleEntryPage() {
     <section className="detail-page">
       <ReadingProgress />
       <div className="detail-wrap article-detail-wrap">
-        <TopBackLink to="/articles" label="BACK TO ARTICLES" />
+        <BackButton fallback="/articles" label="BACK" />
         <p className="mono detail-kicker">
           ARTICLE / {article.date} / {article.readTime}
         </p>
@@ -410,7 +493,7 @@ function ArticleEntryPage() {
           {article.heroLabel ? <p className="mono article-hero-label">{article.heroLabel}</p> : null}
           <h2 className="article-hero-title">{article.title}</h2>
           {article.subtitle ? <p className="article-hero-subtitle">{article.subtitle}</p> : null}
-          {article.summary ? <p className="detail-summary">{article.summary}</p> : null}
+          {article.summary && article.summary !== article.subtitle ? <p className="detail-summary">{article.summary}</p> : null}
           {article.authorName || article.authorMeta ? (
             <div className="article-author-block">
               <div className="article-author-avatar">{(article.authorName || 'A').charAt(0)}</div>
@@ -447,9 +530,9 @@ function ArticleEntryPage() {
           subject={`Re: ${article.title}`}
           className="contact-form-bordered"
         />
-        <Link className="mono item-link" to="/articles">
-          BACK TO ARTICLES
-        </Link>
+        <a className="mono item-link" href="/articles" onClick={(e) => { e.preventDefault(); window.history.back() }}>
+          ← BACK
+        </a>
       </div>
     </section>
   )
@@ -473,6 +556,8 @@ function NotFoundPage() {
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
+      <DocumentTitle />
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
