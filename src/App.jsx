@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import {
   BrowserRouter,
   Link,
@@ -9,11 +9,8 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router-dom'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeRaw from 'rehype-raw'
-import rehypeHighlight from 'rehype-highlight'
 import './App.css'
+import ContactForm from './components/ContactForm'
 import {
   about,
   contactInfo,
@@ -116,21 +113,6 @@ function NavBar() {
       </header>
     </div>
   )
-}
-
-function ReadingProgress() {
-  const [pct, setPct] = useState(0)
-
-  useEffect(() => {
-    function onScroll() {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight
-      setPct(scrollable > 0 ? (window.scrollY / scrollable) * 100 : 0)
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  return <div className="reading-progress" style={{ width: `${pct}%` }} />
 }
 
 function useScrollReveal() {
@@ -416,125 +398,16 @@ function SectionEntryPage() {
   )
 }
 
-function ContactForm({ subject, heading, subtext, className }) {
-  const formRef = useRef(null)
-  const [sent, setSent] = useState(false)
-  const [sending, setSending] = useState(false)
+const ArticleEntryPage = lazy(() => import('./pages/ArticleEntryPage'))
 
-  async function handleSend(e) {
-    e.preventDefault()
-    setSending(true)
-    try {
-      await fetch('https://formsubmit.co/ajax/gupta.swayam123@gmail.com', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          _subject: subject || 'New message from portfolio',
-          message: formRef.current.message.value,
-          email: formRef.current.email.value || '(not provided)',
-          _honey: '',
-        }),
-      })
-      setSent(true)
-    } catch {
-      setSending(false)
-    }
-  }
-
-  if (sent) {
-    return (
-      <div className={`contact-form ${className || ''}`}>
-        <p className="contact-form-heading">Sent — thank you.</p>
-        <p className="contact-form-sub">I'll get back if you left your email.</p>
-      </div>
-    )
-  }
-
-  return (
-    <form className={`contact-form ${className || ''}`} ref={formRef} onSubmit={handleSend}>
-      <p className="contact-form-heading">{heading || 'Thoughts?'}</p>
-      <p className="contact-form-sub">{subtext || 'Drop me a note — I read every one.'}</p>
-      <div className="contact-form-fields">
-        <textarea name="message" placeholder="Your message..." rows={3} required />
-        <input name="email" type="email" placeholder="Your email (optional)" />
-        <button type="submit" className="contact-form-send" disabled={sending}>
-          {sending ? 'SENDING...' : 'SEND MESSAGE'}
-        </button>
-      </div>
-    </form>
-  )
-}
-
-function ArticleEntryPage() {
+function ArticleEntryPageWrapper() {
   const { slug } = useParams()
   const article = findArticleBySlug(slug)
-
-  if (!article) {
-    return <Navigate to="/404" replace />
-  }
-
-  const articleTags =
-    typeof article.tags === 'string'
-      ? article.tags
-          .split(',')
-          .map((tag) => tag.trim())
-          .filter(Boolean)
-      : []
-
+  if (!article) return <Navigate to="/404" replace />
   return (
-    <section className="detail-page">
-      <ReadingProgress />
-      <div className="detail-wrap article-detail-wrap">
-        <BackButton fallback="/articles" label="BACK" />
-        <p className="mono detail-kicker">
-          ARTICLE / {article.date} / {article.readTime}
-        </p>
-        <div className="article-page-hero">
-          {article.heroLabel ? <p className="mono article-hero-label">{article.heroLabel}</p> : null}
-          <h2 className="article-hero-title">{article.title}</h2>
-          {article.subtitle ? <p className="article-hero-subtitle">{article.subtitle}</p> : null}
-          {article.summary && article.summary !== article.subtitle ? <p className="detail-summary">{article.summary}</p> : null}
-          {article.authorName || article.authorMeta ? (
-            <div className="article-author-block">
-              <div className="article-author-avatar">{(article.authorName || 'A').charAt(0)}</div>
-              <div className="article-author-info">
-                {article.authorName ? <p className="mono article-author-name">{article.authorName}</p> : null}
-                {article.authorMeta ? <p className="mono article-author-meta">{article.authorMeta}</p> : null}
-              </div>
-            </div>
-          ) : null}
-        </div>
-        {article.coverImage ? (
-          <img
-            className="article-cover"
-            src={article.coverImage}
-            alt={`${article.title} cover`}
-            loading="lazy"
-          />
-        ) : null}
-        <div className="detail-body article-prose">
-          <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeHighlight]}>
-            {article.body}
-          </ReactMarkdown>
-        </div>
-        {articleTags.length ? (
-          <div className="article-tags" aria-label="Article tags">
-            {articleTags.map((tag) => (
-              <span className="mono article-tag" key={tag}>
-                {tag}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        <ContactForm
-          subject={`Re: ${article.title}`}
-          className="contact-form-bordered"
-        />
-        <a className="mono item-link" href="/articles" onClick={(e) => { e.preventDefault(); window.history.back() }}>
-          ← BACK
-        </a>
-      </div>
-    </section>
+    <Suspense fallback={null}>
+      <ArticleEntryPage article={article} />
+    </Suspense>
   )
 }
 
@@ -562,7 +435,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/articles" element={<ArticlesPage />} />
-          <Route path="/articles/:slug" element={<ArticleEntryPage />} />
+          <Route path="/articles/:slug" element={<ArticleEntryPageWrapper />} />
           <Route path="/entry/:sectionId/:slug" element={<SectionEntryPage />} />
           <Route path="/404" element={<NotFoundPage />} />
           <Route path="*" element={<Navigate to="/404" replace />} />
