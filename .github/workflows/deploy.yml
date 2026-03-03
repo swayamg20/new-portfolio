@@ -30,6 +30,8 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          VITE_GA_MEASUREMENT_ID: ${{ secrets.VITE_GA_MEASUREMENT_ID }}
 
       - name: SPA fallback for client-side routing
         run: cp dist/index.html dist/404.html

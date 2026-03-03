@@ -22,6 +22,15 @@ import {
   siteMeta,
 } from './content/data'
 import { articles, findArticleBySlug } from './content/articles'
+import { pageview } from './analytics.js'
+
+function GoogleAnalytics() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    pageview(pathname)
+  }, [pathname])
+  return null
+}
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -431,6 +440,7 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <DocumentTitle />
+      <GoogleAnalytics />
       <Layout>
         <Routes>
           <Route path="/" element={<HomePage />} />
