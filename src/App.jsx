@@ -46,7 +46,7 @@ function DocumentTitle() {
     ? pathname.replace(/^\/articles\/?/, '')
     : null
   const article = articleSlug ? findArticleBySlug(articleSlug) : null
-
+ 
   useEffect(() => {
     if (article) {
       document.title = `${article.title} | ${siteMeta.name}`
