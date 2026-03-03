@@ -18,3 +18,13 @@ export function pageview(path) {
   if (!GA_MEASUREMENT_ID || typeof window?.gtag !== 'function') return
   window.gtag('config', GA_MEASUREMENT_ID, { page_path: path })
 }
+
+/**
+ * Send a custom event to GA4. Params show up in Reports → Engage → Events (and in custom dimensions if you map them).
+ * @param {string} name - Event name (e.g. 'click_nav', 'contact_form_submit')
+ * @param {Record<string, string|number|boolean>} [params] - Optional event parameters
+ */
+export function trackEvent(name, params = {}) {
+  if (!GA_MEASUREMENT_ID || typeof window?.gtag !== 'function') return
+  window.gtag('event', name, params)
+}

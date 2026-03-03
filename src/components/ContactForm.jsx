@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { trackEvent } from '../analytics.js'
 
 export default function ContactForm({ subject, heading, subtext, className }) {
   const formRef = useRef(null)
@@ -19,6 +20,7 @@ export default function ContactForm({ subject, heading, subtext, className }) {
           _honey: '',
         }),
       })
+      trackEvent('contact_form_submit', { status: 'success' })
       setSent(true)
     } catch {
       setSending(false)

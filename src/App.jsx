@@ -22,7 +22,7 @@ import {
   siteMeta,
 } from './content/data'
 import { articles, findArticleBySlug } from './content/articles'
-import { pageview } from './analytics.js'
+import { pageview, trackEvent } from './analytics.js'
 
 function GoogleAnalytics() {
   const { pathname } = useLocation()
@@ -104,18 +104,18 @@ function NavBar() {
           {siteMeta.name.toUpperCase()} / {siteMeta.role.toUpperCase()}
         </Link>
         <nav className="mono nav-links" aria-label="Primary">
-          <a href="/#about">ABOUT</a>
-          <a href="/#projects">WORK</a>
-          <Link to="/articles">ARTICLES</Link>
-          <a href="/#contact">CONTACT</a>
+          <a href="/#about" onClick={() => trackEvent('click_nav', { link: 'about' })}>ABOUT</a>
+          <a href="/#projects" onClick={() => trackEvent('click_nav', { link: 'work' })}>WORK</a>
+          <Link to="/articles" onClick={() => trackEvent('click_nav', { link: 'articles' })}>ARTICLES</Link>
+          <a href="/#contact" onClick={() => trackEvent('click_nav', { link: 'contact' })}>CONTACT</a>
           <span className="nav-divider" />
-          <a href="https://github.com/swayamg20" target="_blank" rel="noreferrer" aria-label="GitHub" className="nav-icon">
+          <a href="https://github.com/swayamg20" target="_blank" rel="noreferrer" aria-label="GitHub" className="nav-icon" onClick={() => trackEvent('click_social', { platform: 'github' })}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6.02 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.82.58A12.01 12.01 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
           </a>
-          <a href="https://linkedin.com/in/swayamgupta20" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="nav-icon">
+          <a href="https://linkedin.com/in/swayamgupta20" target="_blank" rel="noreferrer" aria-label="LinkedIn" className="nav-icon" onClick={() => trackEvent('click_social', { platform: 'linkedin' })}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45zM22.23 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
           </a>
-          <a href="https://x.com/swayamg20" target="_blank" rel="noreferrer" aria-label="X" className="nav-icon">
+          <a href="https://x.com/swayamg20" target="_blank" rel="noreferrer" aria-label="X" className="nav-icon" onClick={() => trackEvent('click_social', { platform: 'x' })}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.24 2.25h3.55l-7.76 8.87L23.52 21.75h-7.15l-5.6-7.33-6.41 7.33H.81l8.3-9.49L.48 2.25h7.33l5.07 6.7 5.36-6.7zm-1.25 17.52h1.97L7.08 4.26H4.98l11.01 15.51z"/></svg>
           </a>
         </nav>
@@ -169,14 +169,14 @@ function ArticleRow({ article }) {
 
   if (article.externalUrl) {
     return (
-      <a className="article-row" href={article.externalUrl} target="_blank" rel="noreferrer" key={article.slug}>
+      <a className="article-row" href={article.externalUrl} target="_blank" rel="noreferrer" key={article.slug} onClick={() => trackEvent('click_article', { slug: article.slug, type: 'external' })}>
         {inner}
       </a>
     )
   }
 
   return (
-    <Link className="article-row" to={`/articles/${article.slug}`} key={article.slug}>
+    <Link className="article-row" to={`/articles/${article.slug}`} key={article.slug} onClick={() => trackEvent('click_article', { slug: article.slug, type: 'internal' })}>
       {inner}
     </Link>
   )
@@ -195,7 +195,7 @@ function renderSectionItems(section) {
             </div>
             <div className="project-aside">
               <p className="mono item-meta">{item.meta}</p>
-              <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`}>
+              <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
                 OPEN ENTRY
               </Link>
             </div>
@@ -213,7 +213,7 @@ function renderSectionItems(section) {
             <p className="mono item-meta">{item.meta}</p>
             <h3>{item.title}</h3>
             <p>{item.summary}</p>
-            <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`}>
+            <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
               OPEN ENTRY
             </Link>
           </article>
@@ -232,7 +232,7 @@ function renderSectionItems(section) {
               <p className="mono item-meta">{item.meta}</p>
             </div>
             <p>{item.summary}</p>
-            <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`}>
+            <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
               READ NOTE
             </Link>
           </article>
@@ -248,7 +248,7 @@ function renderSectionItems(section) {
           <p className="mono item-meta">{item.meta}</p>
           <h3>{item.title}</h3>
           <p>{item.summary}</p>
-          <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`}>
+          <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
             OPEN ENTRY
           </Link>
         </article>
@@ -347,7 +347,7 @@ function HomePage() {
             <div className="contact-links-col">
               <p className="mono experience-label">FIND ME</p>
               {contactInfo.map((entry) => (
-                <a className="contact-link-row" href={entry.href} key={entry.label} target="_blank" rel="noreferrer">
+                <a className="contact-link-row" href={entry.href} key={entry.label} target="_blank" rel="noreferrer" onClick={() => trackEvent('click_contact_link', { label: entry.label })}>
                   <span className="mono contact-link-label">{entry.label}</span>
                   <span className="contact-link-value">{entry.value}</span>
                 </a>
