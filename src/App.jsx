@@ -22,6 +22,7 @@ import {
 import { articles, findArticleBySlug } from './content/articles'
 import { pageview, trackEvent } from './analytics.js'
 import { ProjectVisualBySlug } from './components/ProjectVisuals'
+import ContactForm from './components/ContactForm'
 
 // Split a string on backticks; render odd-indexed segments as <code>.
 // Handles the common "I built a `BaseMCPServer` for `@scope/pkg`" pattern.
@@ -486,6 +487,14 @@ function SectionEntryPage() {
                   <p>{renderInlineCode(value)}</p>
                 </section>
               ))}
+          {sectionId === 'projects' ? (
+            <ContactForm
+              subject={`/${slug}: question or comment`}
+              heading={`Question or comment about ${entry.title}?`}
+              subtext="Drop a note — goes straight to my inbox, tagged by project."
+              className="contact-form-compact"
+            />
+          ) : null}
         </div>
         <Link className="mono item-link" to="/">
           BACK TO HOME

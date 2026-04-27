@@ -1229,16 +1229,17 @@
   font-family: var(--mono-font);
   font-size: 13px;
   color: #EDE6DA;
-  background: rgba(237, 230, 218, 0.4);
-  border: 1px solid rgba(237, 230, 218, 0.14);
+  background: rgba(237, 230, 218, 0.04);
+  border: 1px solid rgba(237, 230, 218, 0.18);
   border-radius: 2px;
   outline: none;
-  transition: border-color 140ms ease;
+  transition: border-color 140ms ease, background-color 140ms ease;
 }
 
 .contact-form-fields input:focus,
 .contact-form-fields textarea:focus {
-  border-color: rgba(237, 230, 218, 0.36);
+  border-color: var(--accent);
+  background: rgba(237, 230, 218, 0.06);
 }
 
 .contact-form-fields textarea {
@@ -1251,7 +1252,7 @@
 
 .contact-form-fields input::placeholder,
 .contact-form-fields textarea::placeholder {
-  color: rgba(237, 230, 218, 0.36);
+  color: rgba(237, 230, 218, 0.4);
 }
 
 .contact-form-send {
@@ -1263,7 +1264,7 @@
   font-weight: 500;
   letter-spacing: 0.08em;
   color: rgba(237, 230, 218, 0.92);
-  background: rgba(237, 230, 218, 0.06);
+  background: rgba(237, 230, 218, 0.04);
   border: 1px solid rgba(237, 230, 218, 0.26);
   border-radius: 2px;
   cursor: pointer;
@@ -1272,9 +1273,33 @@
 }
 
 .contact-form-send:hover {
-  background: rgba(237, 230, 218, 0.88);
-  border-color: rgba(237, 230, 218, 0.88);
-  color: #f6f2ea;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #14110d;
+}
+
+/* ---- Compact variant for inline per-project comment box ---- */
+.contact-form-compact {
+  margin-top: 32px;
+  padding: 18px 20px;
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  background: rgba(237, 230, 218, 0.02);
+}
+
+.contact-form-compact .contact-form-heading {
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.contact-form-compact .contact-form-sub {
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+.contact-form-compact .contact-form-fields textarea {
+  min-height: 64px;
+  font-size: 14px;
 }
 
 .contact-layout {
