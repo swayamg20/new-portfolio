@@ -10,9 +10,7 @@ import {
   useNavigate,
 } from 'react-router-dom'
 import './App.css'
-import ContactForm from './components/ContactForm'
 import {
-  about,
   contactInfo,
   experience,
   findSectionItemBySlug,
@@ -23,6 +21,32 @@ import {
 } from './content/data'
 import { articles, findArticleBySlug } from './content/articles'
 import { pageview, trackEvent } from './analytics.js'
+import { ProjectVisualBySlug } from './components/ProjectVisuals'
+
+// Split a string on backticks; render odd-indexed segments as <code>.
+// Handles the common "I built a `BaseMCPServer` for `@scope/pkg`" pattern.
+function renderInlineCode(text) {
+  if (!text || typeof text !== 'string' || !text.includes('`')) return text
+  const parts = text.split('`')
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <code key={i}>{part}</code> : <span key={i}>{part}</span>
+  )
+}
+
+function humanizeKey(key) {
+  // whatItIs -> "What it is"; sceneDescriptionLanguage -> "Scene description language"; etc.
+  const KEY_OVERRIDES = {
+    whatItIs: 'What it is',
+    sceneDescriptionLanguage: 'Scene Description Language',
+    aiPipeline: 'AI pipeline',
+    authSurface: 'Auth surface',
+    trustModel: 'Trust model',
+    shortcutsServer: 'Shortcuts server',
+  }
+  if (KEY_OVERRIDES[key]) return KEY_OVERRIDES[key]
+  const spaced = key.replace(/([A-Z])/g, ' $1').trim()
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1).toLowerCase()
+}
 
 function GoogleAnalytics() {
   const { pathname } = useLocation()
@@ -46,7 +70,7 @@ function DocumentTitle() {
     ? pathname.replace(/^\/articles\/?/, '')
     : null
   const article = articleSlug ? findArticleBySlug(articleSlug) : null
- 
+
   useEffect(() => {
     if (article) {
       document.title = `${article.title} | ${siteMeta.name}`
@@ -104,7 +128,7 @@ function NavBar() {
           {siteMeta.name.toUpperCase()} / {siteMeta.role.toUpperCase()}
         </Link>
         <nav className="mono nav-links" aria-label="Primary">
-          <a href="/#about" onClick={() => trackEvent('click_nav', { link: 'about' })}>ABOUT</a>
+          <a href="/#experience" onClick={() => trackEvent('click_nav', { link: 'experience' })}>EXPERIENCE</a>
           <a href="/#projects" onClick={() => trackEvent('click_nav', { link: 'work' })}>WORK</a>
           <Link to="/articles" onClick={() => trackEvent('click_nav', { link: 'articles' })}>ARTICLES</Link>
           <a href="/#contact" onClick={() => trackEvent('click_nav', { link: 'contact' })}>CONTACT</a>
@@ -182,59 +206,78 @@ function ArticleRow({ article }) {
   )
 }
 
+function ProjectLinks({ links, sectionId, slug }) {
+  if (!links || links.length === 0) return null
+  return (
+    <div className="project-links mono">
+      {links.map((link) => {
+        const isExternal = /^https?:\/\//.test(link.href)
+        if (isExternal) {
+          return (
+            <a
+              key={link.label}
+              className="project-link"
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackEvent('click_project_link', { section_id: sectionId, slug, label: link.label })}
+            >
+              {link.label} ↗
+            </a>
+          )
+        }
+        if (link.href.startsWith('/')) {
+          return (
+            <Link
+              key={link.label}
+              className="project-link"
+              to={link.href}
+              onClick={() => trackEvent('click_project_link', { section_id: sectionId, slug, label: link.label })}
+            >
+              {link.label} →
+            </Link>
+          )
+        }
+        return (
+          <a
+            key={link.label}
+            className="project-link"
+            href={link.href}
+            onClick={(e) => {
+              if (link.href === '#') e.preventDefault()
+              trackEvent('click_project_link', { section_id: sectionId, slug, label: link.label })
+            }}
+          >
+            {link.label}
+          </a>
+        )
+      })}
+    </div>
+  )
+}
+
 function renderSectionItems(section) {
   if (section.id === 'projects') {
     return (
       <div className="project-list">
         {section.items.map((item, index) => (
           <article className="project-row-card" key={item.slug}>
+            <Link
+              className="project-card-stretched"
+              to={`/entry/${section.id}/${item.slug}`}
+              onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}
+              aria-label={`Open ${item.title}`}
+            />
             <p className="mono project-index">{String(index + 1).padStart(2, '0')}</p>
             <div className="project-main">
               <h3>{item.title}</h3>
-              <p>{item.summary}</p>
+              <p className="mono project-meta-line">{item.meta}</p>
+              <p>{renderInlineCode(item.summary)}</p>
+              <ProjectLinks links={item.links} sectionId={section.id} slug={item.slug} />
             </div>
             <div className="project-aside">
-              <p className="mono item-meta">{item.meta}</p>
-              <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
-                OPEN ENTRY
-              </Link>
+              <span className="mono project-arrow" aria-hidden="true">→</span>
             </div>
-          </article>
-        ))}
-      </div>
-    )
-  }
-
-  if (section.id === 'portfolio') {
-    return (
-      <div className="portfolio-grid">
-        {section.items.map((item) => (
-          <article className="portfolio-card" key={item.slug}>
-            <p className="mono item-meta">{item.meta}</p>
-            <h3>{item.title}</h3>
-            <p>{item.summary}</p>
-            <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
-              OPEN ENTRY
-            </Link>
-          </article>
-        ))}
-      </div>
-    )
-  }
-
-  if (section.id === 'interests') {
-    return (
-      <div className="interest-grid">
-        {section.items.map((item) => (
-          <article className="interest-card" key={item.slug}>
-            <div className="interest-topline">
-              <h3>{item.title}</h3>
-              <p className="mono item-meta">{item.meta}</p>
-            </div>
-            <p>{item.summary}</p>
-            <Link className="mono item-link" to={`/entry/${section.id}/${item.slug}`} onClick={() => trackEvent('click_open_entry', { section_id: section.id, slug: item.slug })}>
-              READ NOTE
-            </Link>
           </article>
         ))}
       </div>
@@ -268,45 +311,40 @@ function HomePage() {
             <span className="hero-heading-name">Swayam Gupta</span>
           </h1>
           <div className="rule" />
-          <p className="description">{hero.description}</p>
+          <p className="description">{renderInlineCode(hero.description)}</p>
+          <ul className="hero-bracket mono" aria-label="Highlights">
+            <li>multi-agent orchestrator · ~30 tools · LiveKit WebRTC pipeline</li>
+            <li>custom Zep-compatible memory layer · LLM tracing via Langfuse</li>
+            <li>30K+ AI-handled calls/day · 3 open-source agent tools shipped</li>
+          </ul>
+          <p className="hero-inline-link mono">
+            <a href="https://github.com/swayamg20/AgentRelay" target="_blank" rel="noreferrer">→ AgentRelay on GitHub</a>
+          </p>
         </div>
       </section>
 
       <section className="content-wrap">
-        <article className="section-block reveal" id="about">
-          <div className="section-header">
-            <p className="mono section-title">ABOUT</p>
-          </div>
-          <p className="mono about-tagline">{about.tagline}</p>
-          <p className="about-bio">{about.bio}</p>
-          <div className="about-current">
-            <p className="mono about-current-role">{about.currentRole}</p>
-            <p className="about-current-focus">{about.currentFocus}</p>
-          </div>
-        </article>
-
         <article className="section-block reveal" id="experience">
           <div className="section-header">
             <p className="mono section-title">EXPERIENCE</p>
           </div>
-          <div className="experience-timeline">
+          <ul className="experience-list">
             {experience.map((exp) => (
-              <div className="experience-item reveal" key={exp.period}>
-                <div className="experience-period">
-                  <p className="mono">{exp.period}</p>
+              <li className="experience-row" key={exp.company}>
+                <div className="experience-row-head">
+                  <span className="experience-role">{exp.role}</span>
+                  <span className="experience-sep mono">·</span>
+                  {exp.companyUrl ? (
+                    <a className="experience-company" href={exp.companyUrl} target="_blank" rel="noreferrer">{exp.company}</a>
+                  ) : (
+                    <span className="experience-company">{exp.company}</span>
+                  )}
+                  <span className="mono experience-period">{exp.period}</span>
                 </div>
-                <div className="experience-content">
-                  <p className="experience-role">{exp.role}</p>
-                  <p className="mono experience-company">
-                    {exp.companyUrl ? (
-                      <a href={exp.companyUrl} target="_blank" rel="noreferrer">{exp.company}</a>
-                    ) : exp.company}
-                  </p>
-                  <p className="experience-desc">{exp.description}</p>
-                </div>
-              </div>
+                <p className="experience-desc">{renderInlineCode(exp.description)}</p>
+              </li>
             ))}
-          </div>
+          </ul>
         </article>
 
         {sections.map((section) => (
@@ -338,21 +376,13 @@ function HomePage() {
           <div className="section-header">
             <p className="mono section-title">CONTACT</p>
           </div>
-          <div className="contact-layout">
-            <ContactForm
-              subject="New message from portfolio"
-              heading="Say hello."
-              subtext="Have a question, idea, or just want to chat? Drop me a message."
-            />
-            <div className="contact-links-col">
-              <p className="mono experience-label">FIND ME</p>
-              {contactInfo.map((entry) => (
-                <a className="contact-link-row" href={entry.href} key={entry.label} target="_blank" rel="noreferrer" onClick={() => trackEvent('click_contact_link', { label: entry.label })}>
-                  <span className="mono contact-link-label">{entry.label}</span>
-                  <span className="contact-link-value">{entry.value}</span>
-                </a>
-              ))}
-            </div>
+          <div className="contact-links-col">
+            {contactInfo.map((entry) => (
+              <a className="contact-link-row" href={entry.href} key={entry.label} target="_blank" rel="noreferrer" onClick={() => trackEvent('click_contact_link', { label: entry.label })}>
+                <span className="mono contact-link-label">{entry.label}</span>
+                <span className="contact-link-value">{entry.value}</span>
+              </a>
+            ))}
           </div>
         </article>
       </section>
@@ -394,10 +424,68 @@ function SectionEntryPage() {
         </p>
         <h2>{entry.title}</h2>
         <p className="detail-summary">{entry.summary}</p>
+        {sectionId === 'projects' ? <ProjectVisualBySlug slug={slug} /> : null}
+        {entry.videoUrl ? (
+          <video
+            className="detail-video"
+            controls
+            muted
+            playsInline
+            poster={entry.videoPoster || undefined}
+            src={entry.videoUrl}
+          >
+            Your browser doesn't support HTML5 video.
+          </video>
+        ) : null}
+        {entry.links && entry.links.length > 0 ? (
+          <div className="project-links mono detail-links">
+            {entry.links.map((link) => {
+              const isExternal = /^https?:\/\//.test(link.href)
+              if (isExternal) {
+                return (
+                  <a key={link.label} className="project-link" href={link.href} target="_blank" rel="noreferrer">
+                    {link.label} ↗
+                  </a>
+                )
+              }
+              if (link.href.startsWith('/')) {
+                return (
+                  <Link key={link.label} className="project-link" to={link.href}>
+                    {link.label} →
+                  </Link>
+                )
+              }
+              return (
+                <a
+                  key={link.label}
+                  className="project-link"
+                  href={link.href}
+                  onClick={(e) => {
+                    if (link.href === '#') e.preventDefault()
+                  }}
+                >
+                  {link.label}
+                </a>
+              )
+            })}
+          </div>
+        ) : null}
+        {entry.stack && entry.stack.length > 0 ? (
+          <ul className="detail-stack-chips" aria-label="Stack">
+            {entry.stack.map((chip) => (
+              <li className="detail-stack-chip mono" key={chip}>{chip}</li>
+            ))}
+          </ul>
+        ) : null}
         <div className="detail-body">
-          {entry.content.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+          {Array.isArray(entry.content)
+            ? entry.content.map((paragraph) => <p key={paragraph}>{renderInlineCode(paragraph)}</p>)
+            : Object.entries(entry.content).map(([key, value]) => (
+                <section className="detail-section" key={key}>
+                  <h3 className="detail-section-title">{humanizeKey(key)}</h3>
+                  <p>{renderInlineCode(value)}</p>
+                </section>
+              ))}
         </div>
         <Link className="mono item-link" to="/">
           BACK TO HOME
